@@ -3,7 +3,7 @@ FROM BASE_IMAGE as base
 
 WORKDIR ${S3D_SOURCES_DIR}
 COPY . cgal
-RUN cgal/build_cgal.sh && rm cgal/build_cgal.sh
+RUN cgal/s3d_build_cgal.sh && rm cgal/s3d_build_cgal.sh
 
 FROM BASE_IMAGE as final
 COPY --from=base "${S3D_INSTALL_DIR}/cgal" "${S3D_INSTALL_DIR}/cgal"
