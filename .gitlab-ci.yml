@@ -1,6 +1,6 @@
 variables:
   PROJECT_NAME: s3d-cgal
-  DOCKER_IMAGE_NAME: ${PROJECT_NAME}-ubuntu
+  DOCKER_IMAGE_NAME: s3d-cgal-ubuntu
 
 build:
   image: docker:latest
