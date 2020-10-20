@@ -1,0 +1,22 @@
+variables:
+  PROJECT_NAME: s3d-cgal
+  DOCKER_IMAGE_NAME: ${PROJECT_NAME}-ubuntu
+
+${DOCKER_IMAGE_NAME}:
+  image: docker:latest
+  stage: ${DOCKER_IMAGE_NAME}
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+    - apk add --no-cache python3 py-pip make
+    - pip install awscli
+    - $(aws ecr get-login --region us-east-1 --no-include-email)
+  variables:
+    AWS_REGISTRY_IMAGE: ${AWS_REGISTRY}/${DOCKER_IMAGE_NAME}
+  script:
+    - docker pull ${AWS_REGISTRY_IMAGE}:latest || true
+    - make -f ${PROJECT_NAME}.makefile ${DOCKER_IMAGE_NAME}.image
+    - docker image ls
+    - docker tag ${DOCKER_IMAGE_NAME} ${AWS_REGISTRY_IMAGE}
+    - docker push ${AWS_REGISTRY_IMAGE}:latest
