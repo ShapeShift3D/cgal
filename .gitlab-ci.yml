@@ -2,9 +2,9 @@ variables:
   PROJECT_NAME: s3d-cgal
   DOCKER_IMAGE_NAME: ${PROJECT_NAME}-ubuntu
 
-${DOCKER_IMAGE_NAME}:
+build:
   image: docker:latest
-  stage: ${DOCKER_IMAGE_NAME}
+  stage: build
   services:
     - docker:dind
   before_script:
