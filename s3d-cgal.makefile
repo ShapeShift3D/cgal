@@ -1,12 +1,12 @@
-
+PROJECT_NAME := cgal
 CACHE_FROM := $(if $(AWS_REGISTRY_IMAGE),--cache-from ${AWS_REGISTRY_IMAGE}:latest,)
-BASE_IMAGE_NAME := s3d-base-ubuntu
-BASE_IMAGE := $(if $(AWS_REGISTRY),${AWS_REGISTRY}/${BASE_IMAGE_NAME},${BASE_IMAGE_NAME})
 
-s3d-cgal-ubuntu.image: %.image: %.dockerfile FORCE
+AWS_REGISTRY_SUBSTITUTION := $(if $(AWS_REGISTRY),${AWS_REGISTRY}/,)
+
+s3d-${PROJECT_NAME}-ubuntu.image: %.image: %.dockerfile FORCE
 	docker build -f $< -t $(basename $@) ${CACHE_FROM} --build-arg BUILDKIT_INLINE_CACHE=1 .
 
-s3d-cgal-ubuntu.dockerfile: %: %.in
-	sed '/^FROM/s|BASE_IMAGE|${BASE_IMAGE}|' $< > $@
+s3d-${PROJECT_NAME}-ubuntu.dockerfile: %: %.in
+	sed 's|\$${AWS_REGISTRY}/|${AWS_REGISTRY_SUBSTITUTION}|' $< > $@
 
 .PHONY: FORCE

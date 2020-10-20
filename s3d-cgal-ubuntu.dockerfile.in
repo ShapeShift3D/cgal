@@ -1,9 +1,9 @@
 # BASE_IMAGE gets replaced by the makefile
-FROM BASE_IMAGE as base
+FROM ${AWS_REGISTRY}/s3d-base-ubuntu as base
 
 WORKDIR ${S3D_SOURCES_DIR}
 COPY . cgal
 RUN cgal/s3d_build_cgal.sh && rm cgal/s3d_build_cgal.sh
 
-FROM BASE_IMAGE as final
+FROM ${AWS_REGISTRY}/s3d-base-ubuntu as final
 COPY --from=base "${S3D_INSTALL_DIR}/cgal" "${S3D_INSTALL_DIR}/cgal"
