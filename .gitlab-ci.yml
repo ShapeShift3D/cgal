@@ -20,3 +20,6 @@ build:
     - docker image ls
     - docker tag ${DOCKER_IMAGE_NAME} ${AWS_REGISTRY_IMAGE}
     - docker push ${AWS_REGISTRY_IMAGE}:latest
+  artifacts:
+      when: always
+      untracked: true
