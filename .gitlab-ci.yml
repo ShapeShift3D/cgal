@@ -6,7 +6,6 @@ stages:
 variables:
   PROJECT_NAME: s3d-cgal
   GIT_SUBMODULE_STRATEGY: recursive
-  DOCKER_IMAGE_NAME: s3d-cgal-ubuntu
 
 windows:start-runner:
   image: ubuntu:latest
