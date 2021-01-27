@@ -50,7 +50,7 @@ windows:package:
   stage: package
   variables:
     PACKAGE_NAME: cgal
-    PACKAGE_VERSION: "1.0.0"
+    PACKAGE_VERSION: "4.14.3"
   before_script:
      - apt-get update
      - apt-get install -y curl zip unzip jq
