@@ -6,7 +6,13 @@ AWS_REGISTRY_SUBSTITUTION := $(if $(AWS_REGISTRY),${AWS_REGISTRY}/,)
 s3d-${PROJECT_NAME}-ubuntu.image: %.image: %.dockerfile FORCE
 	docker build -f $< -t $(basename $@) ${CACHE_FROM} --build-arg BUILDKIT_INLINE_CACHE=1 .
 
-s3d-${PROJECT_NAME}-ubuntu.dockerfile: %: %.in
+s3d-${PROJECT_NAME}-windows.image: %.image: %.dockerfile FORCE
+	docker build -f $< -t $(basename $@) ${CACHE_FROM} --build-arg BUILDKIT_INLINE_CACHE=1 .
+
+### Support rules
+
+# Rule to generate dockefiles
+%.dockerfile: %.dockerfile.in
 	sed 's|\$${AWS_REGISTRY}/|${AWS_REGISTRY_SUBSTITUTION}|' $< > $@
 
 .PHONY: FORCE

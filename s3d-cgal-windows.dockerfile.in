@@ -1,0 +1,6 @@
+FROM ${AWS_REGISTRY}/s3d-base-windows as base
+
+WORKDIR ${S3D_SOURCES_DIR}
+COPY . cgal
+RUN wrap-bash.bat cgal/fetch_gmp.sh
+RUN wrap-bash.bat cgal/s3d_build_cgal.sh
