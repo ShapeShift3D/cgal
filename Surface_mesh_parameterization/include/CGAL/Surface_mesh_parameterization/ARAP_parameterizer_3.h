@@ -263,6 +263,8 @@ private:
   const unsigned int m_iterations;
   const NT m_tolerance;
 
+  bool m_skip_postprocess;
+
 // Private accessors
 private:
   // Get the object that maps the surface's border onto a 2D space.
@@ -1409,7 +1411,7 @@ public:
     output_uvmap("ARAP_final_pre_processing.off", mesh, vertices, faces, uvmap, vimap);
 #endif
 
-    if(!is_one_to_one_mapping(mesh, faces, uvmap)) {
+    if(!m_skip_postprocess && !is_one_to_one_mapping(mesh, faces, uvmap)) {
      // Use post processing to handle flipped elements
 #ifdef CGAL_PARAMETERIZATION_ARAP_VERBOSE
       std::cout << "Parameterization is not valid; calling post processor" << std::endl;
@@ -1429,7 +1431,8 @@ public:
       m_lambda(lambda),
       m_lambda_tolerance(1e-10),
       m_iterations(50),
-      m_tolerance(1e-6)
+      m_tolerance(1e-6),
+      m_skip_postprocess(false)
   { }
 
   /// %Default Constructor.
@@ -1440,19 +1443,23 @@ public:
   /// \param iterations Maximal number of iterations in the energy minimization process.
   /// \param tolerance Minimal energy difference between two iterations for the minimization
   ///        process to continue.
+  /// \param skip_postprocess Skips the postprocess. If set to true, does not guarantee 
+  ///        conservation of triangle ordering.
   ///
   ARAP_parameterizer_3(Border_parameterizer border_param = Border_parameterizer(),
                        Solver_traits sparse_la = Solver_traits(),
                        NT lambda = 1000.,
                        unsigned int iterations = 50,
-                       NT tolerance = 1e-6)
+                       NT tolerance = 1e-6,
+                       bool skip_postprocess = false)
     :
       m_borderParameterizer(border_param),
       m_linearAlgebra(sparse_la),
       m_lambda(lambda),
       m_lambda_tolerance(1e-10),
       m_iterations(iterations),
-      m_tolerance(tolerance)
+      m_tolerance(tolerance),
+      m_skip_postprocess(skip_postprocess)
   { }
 
   // Default copy constructor and operator=() are fine
