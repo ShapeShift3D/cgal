@@ -1,20 +1,36 @@
+# TODO needs
+# TODO tags
+# TODO Double check everything
+# docker image names
+# packages
+# versions
+
 stages:
-  - pre-build
+  - .pre
   - build
-  - package
+  - deploy
 
 variables:
   PROJECT_NAME: s3d-cgal
+  # TODO This is valid only for the ubuntu build
+  DOCKER_IMAGE_NAME: s3d-cgal-ubuntu
+  # Always clone a fresh repo
+  GIT_STRATEGY: clone
+  # Clone submodules recursively
   GIT_SUBMODULE_STRATEGY: recursive
+  # Get only the last commit
+  GIT_DEPTH: 1
+
+# Don't create a pipeline for every push
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - when: always
 
 windows:start-runner:
   image: ubuntu:latest
-  stage: pre-build
-
-  variables:
-    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-
+  stage: .pre
   before_script:
     - apt-get update
     - apt-get install curl jq unzip -y
@@ -30,6 +46,7 @@ windows:start-runner:
     - aws ec2 start-instances --instance-id $INSTANCE_ID
     - aws ec2 wait instance-running --instance-ids $INSTANCE_ID
     - aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
+  needs: []
 
 windows:build:
   image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/s3d-base-windows
@@ -45,9 +62,9 @@ windows:build:
     paths:
       - "${CI_PROJECT_DIR}\\install"
 
-windows:package:
+windows:deploy:
   image: ubuntu:latest
-  stage: package
+  stage: deploy
   variables:
     PACKAGE_NAME: cgal
     PACKAGE_VERSION: "4.14.3"
@@ -61,3 +78,32 @@ windows:package:
     - zip -r "../cgal.zip" *
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "../cgal.zip" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/cgal.zip" -w "\n" | tee upload-result.json'
     - "[ -z \"$(jq '.error // empty' -e < upload-result.json)\" ]"
+  needs:
+    - windows:build
+  rules:
+    - when: manual
+
+ubuntu:build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+    - apk add --no-cache python3 py-pip make
+    - pip install awscli
+    - $(aws ecr get-login --region us-east-1 --no-include-email)
+  variables:
+    AWS_REGISTRY_IMAGE: ${AWS_REGISTRY}/${DOCKER_IMAGE_NAME}
+  script:
+    # TODO Build a package instead of a docker image
+    - docker pull ${AWS_REGISTRY_IMAGE}:latest || true
+    - make -f ${PROJECT_NAME}.makefile ${DOCKER_IMAGE_NAME}.image
+    - docker image ls
+    - docker tag ${DOCKER_IMAGE_NAME} ${AWS_REGISTRY_IMAGE}
+    # - docker push ${AWS_REGISTRY_IMAGE}:latest
+  artifacts:
+      when: always
+      untracked: true
+  needs: []
+
