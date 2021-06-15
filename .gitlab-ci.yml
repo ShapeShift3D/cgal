@@ -67,7 +67,7 @@ windows:deploy:
   stage: deploy
   variables:
     PACKAGE_NAME: cgal
-    PACKAGE_VERSION: "4.14.3"
+    PACKAGE_VERSION: "5.1.1"
   before_script:
      - apt-get update
      - apt-get install -y curl zip unzip jq
@@ -101,7 +101,7 @@ ubuntu:build:
     - make -f ${PROJECT_NAME}.makefile ${DOCKER_IMAGE_NAME}.image
     - docker image ls
     - docker tag ${DOCKER_IMAGE_NAME} ${AWS_REGISTRY_IMAGE}
-    # - docker push ${AWS_REGISTRY_IMAGE}:latest
+    - docker push ${AWS_REGISTRY_IMAGE}:latest
   artifacts:
       when: always
       untracked: true
